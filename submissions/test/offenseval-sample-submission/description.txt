@@ -1,0 +1,6 @@
+This is a sample submission archive that contains two files.
+Use this as an example to create your own submissions.
+
+There is a file called task-a-submission.csv which contains random predictions against the training set of sub-task A (OffensEval 2019).
+
+There is also this file which contains a description of the system that was used to generate the predictions.
