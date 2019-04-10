@@ -86,6 +86,10 @@ class DataProcessor(object):
         """Gets a collection of `InputExample`s for the dev set."""
         raise NotImplementedError()
 
+    def get_test_examples(self, data_dir):
+        """Gets a collection of `InputExample`s for the test set."""
+        raise NotImplementedError()
+
     def get_labels(self):
         """Gets the list of labels for this data set."""
         raise NotImplementedError()
@@ -117,6 +121,11 @@ class OffenseEvalData(DataProcessor):
         return self._create_examples(
             self._read_tsv(os.path.join(data_dir, "dev.txt")), "dev")
 
+    def get_test_examples(self, data_dir):
+        """See base class."""
+        return self._create_examples(
+            self._read_tsv(os.path.join(data_dir, "test.txt")), "test")
+
     def get_labels(self):
         """See base class."""
         return ["NOT", "OFF"]
@@ -130,7 +139,8 @@ class OffenseEvalData(DataProcessor):
             guid = line[0]
             text_a = line[1].replace(";", " ")
             text_b = None
-            label = line[2]
+            # setting label to NOT for test set just as a dummy label.
+            label = line[2] if set_type != "test" else "NOT"
             examples.append(
                 InputExample(guid=guid, text_a=text_a, text_b=text_b, label=label))
         return examples
@@ -295,6 +305,9 @@ def bert():
     parser.add_argument("--do_eval",
                         action='store_true',
                         help="Whether to run eval on the dev set.")
+    parser.add_argument("--do_test",
+                        action='store_true',
+                        help="Whether to run eval on the dev set.")
     parser.add_argument("--do_lower_case",
                         action='store_true',
                         help="Set this flag if you are using an uncased model.")
@@ -366,8 +379,8 @@ def bert():
     if n_gpu > 0:
         torch.cuda.manual_seed_all(args.seed)
 
-    if not args.do_train and not args.do_eval:
-        raise ValueError("At least one of `do_train` or `do_eval` must be True.")
+    if not args.do_train and not args.do_eval and not args.do_test:
+        raise ValueError("At least one of `do_train` or `do_eval` or `do_test` must be True.")
 
     if os.path.exists(args.output_dir) and os.listdir(args.output_dir) and args.do_train:
         raise ValueError("Output directory ({}) already exists and is not empty.".format(args.output_dir))
@@ -476,7 +489,7 @@ def bert():
         model = BertForSequenceClassification.from_pretrained(args.bert_model, num_labels=num_labels)
     model.to(device)
 
-    if args.do_eval and (args.local_rank == -1 or torch.distributed.get_rank() == 0):
+    if args.do_eval or args.do_test:
 
         # Load a trained model and config that you have fine-tuned
         output_model_file = os.path.join(args.output_dir, WEIGHTS_NAME)
@@ -485,7 +498,7 @@ def bert():
         model = BertForSequenceClassification(config, num_labels=num_labels)
         model.load_state_dict(torch.load(output_model_file))
 
-        eval_examples = processor.get_dev_examples(args.data_dir)
+        eval_examples = processor.get_dev_examples(args.data_dir) if args.do_eval else processor.get_test_examples(args.data_dir)
         eval_features = convert_examples_to_features(
             eval_examples, label_list, args.max_seq_length, tokenizer)
         logger.info("***** Running evaluation *****")
@@ -538,12 +551,21 @@ def bert():
         result['global_step'] = global_step
         result['loss'] = loss
 
-        output_eval_file = os.path.join(args.output_dir, "eval_results.txt")
+        output_eval_file = os.path.join(args.output_dir, "eval_results.txt" if args.do_eval else "test_results.txt")
         with open(output_eval_file, "w") as writer:
             logger.info("***** Eval results *****")
             for key in sorted(result.keys()):
                 logger.info("  %s = %s", key, str(result[key]))
                 writer.write("%s = %s\n" % (key, str(result[key])))
+
+        if args.do_test:
+            output_eval_file = os.path.join(args.output_dir, "eval_results.txt" if args.do_eval else "test_submissions.txt")
+            with open(output_eval_file, "w") as writer:
+                logger.info("***** Test submission file *****")
+                label_map = {i: label for i, label in enumerate(label_list)}
+                for test, pred in zip(eval_examples, preds):
+                    writer.write("%s,%s\n" % (test.guid, label_map[pred]))
+
 
 
 if __name__ == "__main__":
