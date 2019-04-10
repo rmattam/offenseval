@@ -11,4 +11,4 @@ if __name__ == "__main__":
         print(dp.category)
         print('\n\n')
 
-    bert.Run()
+    bert.Run(reader.read_data(train_data))
