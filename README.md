@@ -28,6 +28,6 @@ Tasks:
 ##### Data source
 
 dev.txt is from /offenseval-data/start-kit/trail-data
-train.txt is from /offenseval-data/start-kit/training-v1
-test.txt is from /offenseval-data/Test A Release/
+train.txt is from /offenseval-data/OLIDv1.0/olid-training-v1.0
+test.txt is from /offenseval-data/OLIDv1.0/testset-levela.tsv and labels-levela.csv
 

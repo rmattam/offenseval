@@ -94,8 +94,7 @@ class OffenseEvalData(DataProcessor):
             guid = line[0]
             text_a = line[1].replace(";", " ")
             text_b = None
-            # setting label to NOT for test set just as a dummy label.
-            label = line[2] if set_type != "test" else "NOT"
+            label = line[2]
             examples.append(
                 InputExample(guid=guid, text_a=text_a, text_b=text_b, label=label))
         return examples
