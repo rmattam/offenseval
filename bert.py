@@ -567,6 +567,5 @@ def bert():
                     writer.write("%s,%s\n" % (test.guid, label_map[pred]))
 
 
-
 if __name__ == "__main__":
     bert()
