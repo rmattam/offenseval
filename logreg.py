@@ -4,7 +4,18 @@ from sklearn.feature_extraction import DictVectorizer
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn import preprocessing
 from reader import OffenseEvalData
+from sklearn.metrics import f1_score, accuracy_score
 import argparse
+import re
+
+
+def words_and_char_bigrams(text):
+    words = re.findall(r'\w{3,}', text)
+    n = 7
+    for w in words:
+        yield w
+        for i in range(len(w) - n + 1):
+            yield w[i:i + n]
 
 
 class Classifier(object):
@@ -14,7 +25,8 @@ class Classifier(object):
         self.clf = LogisticRegression(solver='liblinear', multi_class='ovr', max_iter=100)
         self.le = preprocessing.LabelEncoder()
         self.dv = DictVectorizer()
-        self.cv = CountVectorizer()
+        self.cv = CountVectorizer(ngram_range=(2, 7))
+
         self.data_dir = data_dir
         self.output_dir = output_dir
 
@@ -37,12 +49,26 @@ class Classifier(object):
 
     def predict(self):
         processor = OffenseEvalData()
-        with open(self.output_dir + "test_submission_logreg.csv") as file:
+        devel_indices = []
+        predicted_indices = []
+        with open(self.output_dir + "test_submission_logreg.csv", "w") as file:
             for sentence in processor.get_test_examples(self.data_dir):
-                X = self.cv.transform(sentence.text_a)
+                X = self.cv.transform([sentence.text_a])
                 y = self.clf.predict(X)
-                label = self.le.classes_[y]
+
+                devel_indices.append(self.label_index(sentence.label))
+                predicted_indices.append(y[0])
+
+                label = self.le.classes_[y[0]]
                 file.write("%s,%s\n" % (sentence.guid, label))
+
+        f1_macro = f1_score(devel_indices, predicted_indices, average="macro")
+        f1_micro = f1_score(devel_indices, predicted_indices, average="micro")
+        accuracy = accuracy_score(devel_indices, predicted_indices)
+
+        # print out performance
+        msg = "\n{:.1%} F1 macro {:.1%} F1 micro and {:.1%} accuracy on SMSSpam development data"
+        print(msg.format(f1_macro, f1_micro, accuracy))
 
 
 def run_classifier():

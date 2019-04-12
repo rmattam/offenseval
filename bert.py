@@ -143,11 +143,12 @@ def simple_accuracy(preds, labels):
 
 def acc_and_f1(preds, labels):
     acc = simple_accuracy(preds, labels)
-    f1 = f1_score(y_true=labels, y_pred=preds)
+    f1_macro = f1_score(y_true=labels, y_pred=preds, average="macro")
+    f1_micro = f1_score(y_true=labels, y_pred=preds, average="micro")
     return {
         "acc": acc,
-        "f1": f1,
-        "acc_and_f1": (acc + f1) / 2,
+        "f1_macor": f1_macro,
+        "f1_micro": f1_micro
     }
 
 
@@ -382,6 +383,7 @@ def bert():
         config = BertConfig(output_config_file)
         model = BertForSequenceClassification(config, num_labels=num_labels)
         model.load_state_dict(torch.load(output_model_file))
+        model.to(device)
 
         eval_examples = processor.get_dev_examples(args.data_dir) if args.do_eval else processor.get_test_examples(args.data_dir)
         eval_features = convert_examples_to_features(
