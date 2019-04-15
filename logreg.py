@@ -25,7 +25,7 @@ class Classifier(object):
         self.clf = LogisticRegression(solver='liblinear', multi_class='ovr', max_iter=100)
         self.le = preprocessing.LabelEncoder()
         self.dv = DictVectorizer()
-        self.cv = CountVectorizer(ngram_range=(2, 7))
+        self.cv = CountVectorizer(ngram_range=(2, 7), analyzer="char_wb")
 
         self.data_dir = data_dir
         self.output_dir = output_dir
@@ -67,7 +67,7 @@ class Classifier(object):
         accuracy = accuracy_score(devel_indices, predicted_indices)
 
         # print out performance
-        msg = "\n{:.1%} F1 macro {:.1%} F1 micro and {:.1%} accuracy on SMSSpam development data"
+        msg = "\n{:.1%} F1 macro {:.1%} F1 micro and {:.1%} accuracy on test data"
         print(msg.format(f1_macro, f1_micro, accuracy))
 
 

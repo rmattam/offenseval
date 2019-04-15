@@ -63,7 +63,7 @@ class DataProcessor(object):
 
 
 class OffenseEvalData(DataProcessor):
-    """Processor for the MRPC data set (GLUE version)."""
+    """Processor for the OffensEval data set (SemEval 2019 OLIDv1.0)."""
 
     def get_train_examples(self, data_dir):
         """See base class."""
