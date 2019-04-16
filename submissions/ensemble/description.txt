@@ -1,0 +1,8 @@
+Predictions from a model ensemble of three classifiers, prediction picked based on a majority consensus.
+1) Bert classifier trained for 10 epochs and batch size 2 on the official training data using a low power GPU of 8GB capacity. 
+2) A logistic regression classifier with a liblinear solver and character ngrams of 2 to 7 charachters range. 
+3) A logistic regression classifier with a liblinear solver and word ngrams of 1 to 7 word range.
+
+There is a file called task-a-submission.csv which contains predictions against the test set of sub-task A (OffensEval 2019) using the model trained.
+
+There is also this file which contains a description of the system that was used to generate the predictions.

@@ -89,3 +89,6 @@ def run_classifier():
 
 if __name__ == "__main__":
     run_classifier()
+
+# usage
+# python ensemble.py --data_dir data/ --output_dir output/ --bert_model_dir bert_trained_model/ --do_lower_case --bert_model bert-base-uncased

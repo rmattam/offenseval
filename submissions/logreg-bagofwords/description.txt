@@ -1,0 +1,5 @@
+A model trained using a logistic regression classifier with a liblinear solver and word ngrams of 1 to 7 word range. 
+
+There is a file called task-a-submission.csv which contains predictions against the test set of sub-task A (OffensEval 2019) using the model trained.
+
+There is also this file which contains a description of the system that was used to generate the predictions.
