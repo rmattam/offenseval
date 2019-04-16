@@ -8,3 +8,5 @@ output-1/
 tiny-data/
 
 output-logreg/
+
+__pycache__/
