@@ -1,5 +1,4 @@
 from __future__ import absolute_import, division, print_function
-import argparse
 import logging
 import os
 import random
@@ -9,12 +8,9 @@ import torch
 from torch.utils.data import (DataLoader, RandomSampler, SequentialSampler,
                               TensorDataset)
 from tqdm import tqdm, trange
-from torch.nn import CrossEntropyLoss
-from sklearn.metrics import f1_score
 from pytorch_pretrained_bert.file_utils import PYTORCH_PRETRAINED_BERT_CACHE
 from pytorch_pretrained_bert.modeling import BertForSequenceClassification, BertConfig, WEIGHTS_NAME, CONFIG_NAME
 from pytorch_pretrained_bert.tokenization import BertTokenizer
-from pytorch_pretrained_bert.optimization import BertAdam
 from reader import OffenseEvalData
 from bert import convert_examples_to_features
 
@@ -26,47 +22,8 @@ logger = logging.getLogger(__name__)
 
 class BertPredict(object):
 
-    def __init__(self):
-        parser = argparse.ArgumentParser()
-
-        ## Required parameters
-        parser.add_argument("--bert_model", type=str, required=True,
-                            help="Bert pre-trained model selected in the list: bert-base-uncased, "
-                                 "bert-large-uncased, bert-base-cased, bert-large-cased, bert-base-multilingual-uncased, "
-                                 "bert-base-multilingual-cased, bert-base-chinese.")
-        parser.add_argument("--output_dir",
-                            default=None,
-                            type=str,
-                            required=True,
-                            help="The output directory where the model predictions and checkpoints will be written.")
-
-        ## Other parameters
-        parser.add_argument("--cache_dir",
-                            default="",
-                            type=str,
-                            help="Where do you want to store the pre-trained models downloaded from s3")
-        parser.add_argument("--max_seq_length",
-                            default=512,
-                            type=int,
-                            help="The maximum total input sequence length after WordPiece tokenization. \n"
-                                 "Sequences longer than this will be truncated, and sequences shorter \n"
-                                 "than this will be padded.")
-        parser.add_argument("--do_lower_case",
-                            action='store_true',
-                            help="Set this flag if you are using an uncased model.")
-        parser.add_argument("--eval_batch_size",
-                            default=5,
-                            type=int,
-                            help="Total batch size for eval.")
-        parser.add_argument("--no_cuda",
-                            action='store_true',
-                            help="Whether not to use CUDA when available")
-        parser.add_argument("--local_rank",
-                            type=int,
-                            default=-1,
-                            help="local_rank for distributed training on gpus")
-
-        self.args = parser.parse_args()
+    def __init__(self, args):
+        self.args = args
 
         if self.args.local_rank == -1 or self.args.no_cuda:
             self.device = torch.device("cuda" if torch.cuda.is_available() and not self.args.no_cuda else "cpu")
@@ -93,8 +50,8 @@ class BertPredict(object):
         self.tokenizer = BertTokenizer.from_pretrained(self.args.bert_model, do_lower_case=True)
 
         # Load a trained model and config that you have fine-tuned
-        output_model_file = os.path.join(self.args.output_dir, WEIGHTS_NAME)
-        output_config_file = os.path.join(self.args.output_dir, CONFIG_NAME)
+        output_model_file = os.path.join(self.args.bert_model_dir, WEIGHTS_NAME)
+        output_config_file = os.path.join(self.args.bert_model_dir, CONFIG_NAME)
         config = BertConfig(output_config_file)
         self.model = BertForSequenceClassification(config, num_labels=self.num_labels)
         self.model.load_state_dict(torch.load(output_model_file))
@@ -117,10 +74,8 @@ class BertPredict(object):
         eval_data = TensorDataset(all_input_ids, all_input_mask, all_segment_ids, all_label_ids)
         # Run prediction for full data
         eval_sampler = SequentialSampler(eval_data)
-        eval_dataloader = DataLoader(eval_data, sampler=eval_sampler, batch_size=self.args.eval_batch_size)
+        eval_dataloader = DataLoader(eval_data, sampler=eval_sampler, batch_size=1)
 
-        eval_loss = 0
-        nb_eval_steps = 0
         preds = []
 
         for input_ids, input_mask, segment_ids, label_ids in tqdm(eval_dataloader, desc="Evaluating"):
