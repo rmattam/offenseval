@@ -5,10 +5,10 @@ def diff_csv(prev, after, actual, write):
             p = p_line.split(",")
             a = a_line.split(",")
             t = t_line.split("\t")
-            if p[0] != a[0] and p[0] != t[0]:
+            if p[0] != a[0] or p[0] != t[0]:
                 raise Exception("mismatch in id")
 
-            if p[1] != a[1] and a[1] == t[2]:
+            if p[1].strip('\n') != a[1].strip('\n') and a[1].strip('\n') == t[2].strip('\n'):
                 w.write(t_line)
 
 
