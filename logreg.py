@@ -26,7 +26,7 @@ class Classifier(object):
         self.clf_word = LogisticRegression(solver='liblinear', multi_class='ovr', max_iter=100)
         self.le = preprocessing.LabelEncoder()
         self.cv_char = CountVectorizer(ngram_range=(2, 7), analyzer="char_wb")
-        self.cv_word = CountVectorizer(ngram_range=(1, 7))
+        self.cv_word = CountVectorizer(ngram_range=(1, 1))
 
         self.data_dir = data_dir
         self.output_dir = output_dir
