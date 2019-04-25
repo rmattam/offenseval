@@ -35,5 +35,8 @@ ensemble:
 analysis points:
 word failed, charachter ngrams worked well for offensive, misspellings : f$$$$$$, fuckkin
 word failed, bert success:  Calm the fuck down,  required with old ass games, Talk about narcissists, the gay community does everything  : not offensvie
-
+model seems ot be biased to some users such as : BreitbartNews
+bert is correct but other two classifier wrong: Most of those harrassers should be thrown off Twitter under the rules. Singleing out an individual - not off
+bert and word is correct but char is wrong: Sometimes my brain hits upon a thought or impression and it *ding*s back, ringing true like crystal - not off
+Word is wrong, bert and char is correct - Yeah thanks to your Nobel Emmy award winning idiot chief flip flopping on everything from Iran to gun control - offensive
 
